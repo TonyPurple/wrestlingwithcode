@@ -5,14 +5,9 @@ type Props = {
   preview?: boolean;
 };
 
-const Alert = ({ preview }: Props) => {
+const Alert = ({}: Props) => {
   return (
-    <div
-      className={cn("border-b", {
-        "bg-neutral-800 border-neutral-800 text-white": preview,
-        "bg-neutral-50 border-neutral-200": !preview,
-      })}
-    >
+    <div className={cn("border-b", "bg-neutral-50 border-indigo-500/50")}>
       <Container>
         <div className="py-2 text-center text-sm">
           <>
