@@ -12,6 +12,20 @@ type Props = {
 };
 
 export default function Index({ allPosts }: Props) {
+  if (!allPosts || allPosts.length === 0) {
+    return (
+      <Layout>
+        <Head>
+          <title>Wrestling with Code</title>
+        </Head>
+        <Container>
+          <Intro />
+          <p>No posts available.</p>
+        </Container>
+      </Layout>
+    );
+  }
+
   const heroPost = allPosts[0];
   const morePosts = allPosts.slice(1);
   return (
