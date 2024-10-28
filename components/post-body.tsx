@@ -1,18 +1,19 @@
-import markdownStyles from './markdown-styles.module.css'
+import markdownStyles from "./markdown-styles.module.css";
 
-type Props = {
-  content: string
+interface Props {
+  content: string;
+  className?: string;
 }
 
-const PostBody = ({ content }: Props) => {
+const PostBody: React.FC<Props> = ({ content, className = "" }) => {
   return (
-    <div className="max-w-2xl mx-auto">
+    <article className={`max-w-2xl mx-auto my-16 ${className}`} role="article">
       <div
-        className={markdownStyles['markdown']}
+        className={`${markdownStyles["markdown"]} font-body transition-all duration-200`}
         dangerouslySetInnerHTML={{ __html: content }}
       />
-    </div>
-  )
-}
+    </article>
+  );
+};
 
-export default PostBody
+export default PostBody;

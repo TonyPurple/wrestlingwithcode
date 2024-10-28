@@ -1,8 +1,39 @@
-import Head from 'next/head'
+import Head from "next/head";
 
-const Meta = () => {
+interface MetaProps {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+}
+
+const Meta = ({
+  title = "Wrestling With Code | Tony Vanoni",
+  description = "Personal blog about software development, coding practices, and technology insights.",
+  keywords = "software development, coding, programming, tech blog",
+  ogImage = "/assets/blog/authors/default.svg",
+  canonicalUrl = "https://wrestlingwithcode.com",
+}: MetaProps) => {
   return (
     <Head>
+      {/* Essential Meta Tags */}
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="keywords" content={keywords} />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+      {/* Canonical URL */}
+      <link rel="canonical" href={canonicalUrl} />
+
+      {/* Open Graph / Social Media */}
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:type" content="website" />
+
+      {/* Favicon Configuration */}
       <link
         rel="apple-touch-icon"
         sizes="180x180"
@@ -27,12 +58,39 @@ const Meta = () => {
         color="#000000"
       />
       <link rel="shortcut icon" href="/favicon/favicon.ico" />
+
+      {/* Microsoft Tile Configuration */}
       <meta name="msapplication-TileColor" content="#000000" />
       <meta name="msapplication-config" content="/favicon/browserconfig.xml" />
-      <meta name="theme-color" content="#000" />
-      <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
-    </Head>
-  )
-}
 
-export default Meta
+      {/* Theme Configuration */}
+      <meta name="theme-color" content="#000" />
+
+      {/* RSS Feed */}
+      <link
+        rel="alternate"
+        type="application/rss+xml"
+        title={`RSS Feed for ${title}`}
+        href="/feed.xml"
+      />
+
+      {/* Font Preloading - optional but recommended */}
+      <link
+        rel="preload"
+        href="/fonts/barlow-condensed.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+      <link
+        rel="preload"
+        href="/fonts/playfair-display.woff2"
+        as="font"
+        type="font/woff2"
+        crossOrigin="anonymous"
+      />
+    </Head>
+  );
+};
+
+export default Meta;

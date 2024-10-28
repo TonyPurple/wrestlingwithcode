@@ -8,6 +8,16 @@ module.exports = {
       display: ["Barlow Condensed", "sans-serif"],
       polished: ["brandon-grotesque", "sans-serif"],
       subpolished: ["Montserrat", "sans-serif"],
+      mono: [
+        "ui-monospace",
+        "SFMono-Regular",
+        "Menlo",
+        "Monaco",
+        "Consolas",
+        "Liberation Mono",
+        "Courier New",
+        "monospace",
+      ],
     },
     extend: {
       colors: {
