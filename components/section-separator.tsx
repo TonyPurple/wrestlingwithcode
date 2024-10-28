@@ -1,5 +1,9 @@
-const SectionSeparator = () => {
-  return <hr className="border-neutral-200 mt-28 mb-24" />
+interface SectionSeparatorProps {
+  className?: string;
 }
 
-export default SectionSeparator
+const SectionSeparator = ({ className = "" }: SectionSeparatorProps) => {
+  return <hr className={`border-neutral-200 space-y-28 ${className}`} />;
+};
+
+export default SectionSeparator;

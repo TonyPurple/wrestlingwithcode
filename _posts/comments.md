@@ -1,6 +1,5 @@
 ---
-title: "
-Comments: The Necessary Evil of Coding or Lifesavers for Future You?"
+title: "Comments: The Necessary Evil of Coding or Lifesavers for Future You?"
 excerpt: "Dear future me.."
 coverImage: "/assets/blog/comments/cover.jpg"
 date: "2024-10-27T16:49:01Z"
@@ -36,7 +35,7 @@ The real issue with comments isn't just about code clarity – it's about mainte
    - Those copyright headers we can't escape
    - Licensing information that keeps the lawyers happy
 
-   ```java
+   ```javascript
    /*
     * Copyright (c) 2024 Tony Vanoni
     * Licensed under MIT
