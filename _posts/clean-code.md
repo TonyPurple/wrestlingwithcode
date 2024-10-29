@@ -1,13 +1,13 @@
 ---
-title: "The Clean Coder: A Code of Conduct for Professional Programmers"
-excerpt: "I've got some time so recently I've decided to revisit Clean Coder now that I have a couple years of professional experience under my belt.."
-coverImage: "/assets/blog/clean-coder/cover.jpg"
+title: "Clean Code: A Handbook of Agile Software Craftsmanship"
+excerpt: "I've got some time so recently I've decided to revisit Clean Code now that I have a couple years of professional experience under my belt.."
+coverImage: "/assets/blog/clean-code/cover.jpg"
 date: "2024-10-24T06:47:07.322Z"
 author:
   name: Tony Vanoni
   picture: "/assets/blog/authors/default.svg"
 ogImage:
-  url: "/assets/blog/clean-coder/cover.jpg"
+  url: "/assets/blog/clean-code/cover.jpg"
 ---
 
 I have time to blog now... Blogs are cool.

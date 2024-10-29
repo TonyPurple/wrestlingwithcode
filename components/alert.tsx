@@ -1,5 +1,5 @@
 import Container from "./container";
-import cn from "classnames";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 
 type Props = {
   preview?: boolean;
@@ -16,6 +16,7 @@ const Alert = ({}: Props) => {
             target="_blank"
             rel="noopener noreferrer"
           >
+            <SiGithub className="w-6 h-6 text-gray-600" />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity duration-200">
               Meanwhile, on GitHub...
             </span>
