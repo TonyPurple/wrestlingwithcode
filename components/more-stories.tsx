@@ -29,24 +29,20 @@ const MoreStories: React.FC<Props> = ({
       </h2>
 
       <div
-        className="grid grid-cols-1 md:grid-cols-2 gap-y-12 md:gap-y-24 lg:gap-y-32 gap-x-8 md:gap-x-16 lg:gap-x-32 mb-32"
+        className="grid grid-cols-1 md:grid-cols-2 gap-y-16 gap-x-8 md:gap-x-16 mb-32"
         role="list"
       >
         {posts.map((post, index) => (
-          <div
+          <PostPreview
             key={post.slug}
-            className="transition-all duration-200 hover:translate-y-[-4px]"
-          >
-            <PostPreview
-              title={post.title}
-              coverImage={post.coverImage}
-              date={post.date}
-              author={post.author}
-              slug={post.slug}
-              excerpt={post.excerpt}
-              priority={index <= 1} // Prioritize loading first two images
-            />
-          </div>
+            title={post.title}
+            coverImage={post.coverImage}
+            date={post.date}
+            author={post.author}
+            slug={post.slug}
+            excerpt={post.excerpt}
+            priority={index <= 1} // Prioritize loading first two images
+          />
         ))}
       </div>
 
