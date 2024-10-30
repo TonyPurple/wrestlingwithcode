@@ -1,11 +1,12 @@
 interface AvatarProps {
   name: string;
   picture: string;
+  className?: string;
 }
 
-const Avatar = ({ name, picture }: AvatarProps) => {
+const Avatar = ({ name, picture, className = "" }: AvatarProps) => {
   return (
-    <div className="flex items-center group">
+    <div className={`flex items-center group ${className}`}>
       <div className="relative">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-75 blur-sm group-hover:opacity-100 transition-opacity duration-200" />
         <img
