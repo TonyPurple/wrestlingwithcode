@@ -9,6 +9,7 @@ import { getPostBySlug, getAllPosts } from "../../lib/api";
 import PostTitle from "../../components/post-title";
 import Head from "next/head";
 import markdownToHtml from "../../lib/markdownToHtml";
+import { getPostShareUrl } from "../../lib/urlUtils";
 import type PostType from "../../interfaces/post";
 
 type Props = {
@@ -54,6 +55,7 @@ export default function Post({ post, morePosts, preview }: Props) {
                 coverImage={post.coverImage}
                 date={post.date}
                 author={post.author}
+                shareUrl={getPostShareUrl(post.slug)}
               />
 
               <div className="border-t border-blue-600/10" />
@@ -84,7 +86,9 @@ export async function getStaticProps({ params }: Params) {
     "coverImage",
     "excerpt",
   ]);
-  const content = await markdownToHtml(typeof post.content === 'string' ? post.content : "");
+  const content = await markdownToHtml(
+    typeof post.content === "string" ? post.content : ""
+  );
 
   return {
     props: {
