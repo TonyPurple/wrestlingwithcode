@@ -1,5 +1,6 @@
 import Avatar from "./avatar";
 import DateFormatter from "./date-formatter";
+import ShareButton from "./share-button";
 import CoverImage from "./cover-image";
 import PostTitle from "./post-title";
 import type Author from "../interfaces/author";
@@ -9,6 +10,7 @@ interface Props {
   coverImage: string;
   date: string;
   author: Author;
+  shareUrl: string;
   className?: string;
 }
 
@@ -17,6 +19,7 @@ const PostHeader: React.FC<Props> = ({
   coverImage,
   date,
   author,
+  shareUrl,
   className = "",
 }) => {
   return (
@@ -36,8 +39,9 @@ const PostHeader: React.FC<Props> = ({
           <Avatar name={author.name} picture={author.picture} />
         </div>
 
-        <div className="mb-6 text-lg font-body transition-all duration-200">
+        <div className="flex items-center justify-between mb-6 text-lg font-body transition-all duration-200">
           <DateFormatter dateString={date} />
+          <ShareButton title={title} url={shareUrl} />
         </div>
       </div>
     </header>
