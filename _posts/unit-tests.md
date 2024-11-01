@@ -1,13 +1,13 @@
 ---
 title: "Unit Testing: Evolving Principles for Modern Web Development"
 excerpt: "Let's talk about tests, baby"
-coverImage: "/assets/blog/unit-tests/cover.avif"
+coverImage: "/assets/blog/unit-tests/cover.jpg"
 date: "2024-11-01T16:49:01Z"
 author:
   name: Tony Vanoni
   picture: "/assets/blog/authors/default.svg"
 ogImage:
-  url: "/assets/blog/unit-tests/cover.avif"
+  url: "/assets/blog/unit-tests/cover.jpg"
 ---
 
 Unit tests are no longer just safety nets—they're strategic guardrails for complex, dynamic web applications. 🛡️
