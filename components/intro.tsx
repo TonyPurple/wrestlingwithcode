@@ -1,10 +1,17 @@
 import { memo } from "react";
-import { Bug, Code2, Hammer } from "lucide-react";
+import { Bug, Code2, Hammer, Code, Terminal, Layout } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface SocialLink {
   href: string;
   label: string;
   icon: React.ReactNode;
+}
+
+interface Feature {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
 }
 
 const SITE_NAME = "Wrestling with Code";
@@ -32,54 +39,127 @@ const SOCIAL_LINKS: SocialLink[] = [
   },
 ];
 
+const FEATURES: Feature[] = [
+  {
+    icon: <Code className="w-8 h-8 text-blue-500" />,
+    title: "Debugging",
+    description: "Tackling complex coding challenges head-on",
+  },
+  {
+    icon: <Terminal className="w-8 h-8 text-purple-500" />,
+    title: "Learning",
+    description: "Continuous growth and skill development",
+  },
+  {
+    icon: <Layout className="w-8 h-8 text-green-500" />,
+    title: "Creating",
+    description: "Building innovative solutions",
+  },
+];
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: "easeOut" },
+};
+
 const Intro = () => {
   return (
-    <section className="flex flex-col md:flex-row items-center justify-between mt-16 mb-16 md:mb-12 relative">
-      {/* Main Title Group */}
-      <div className="flex flex-col w-full md:w-2/3">
-        <div className="flex items-center gap-3 mb-4">
-          <Code2 className="w-8 h-8 text-blue-500" />
-          <span className="text-sm font-medium text-blue-500 uppercase tracking-wider">
-            Developer Journal
-          </span>
+    <section className="relative flex flex-col items-center justify-between mt-16 mb-16 md:mb-12">
+      <motion.div
+        className="w-full flex flex-col items-center"
+        initial="initial"
+        animate="animate"
+        variants={{
+          initial: { opacity: 0, y: 20 },
+          animate: {
+            opacity: 1,
+            y: 0,
+            transition: {
+              staggerChildren: 0.1,
+              delayChildren: 0.2,
+            },
+          },
+        }}
+      >
+        <div className="w-full flex flex-col items-center">
+          <motion.div
+            variants={fadeInUp}
+            className="flex items-center justify-center gap-8"
+          >
+            <div className="text-center">
+              <div className="flex items-center gap-3 mb-4 justify-center">
+                <Code2 className="w-8 h-8 text-blue-500" />
+                <span className="text-sm font-medium text-blue-500 uppercase tracking-wider">
+                  Developer Journal
+                </span>
+              </div>
+
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-tight">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  {SITE_NAME}
+                </span>
+              </h1>
+            </div>
+
+            <div className="flex-shrink-0 flex items-center">
+              <div className="relative">
+                <Bug className="w-24 h-24 text-gray-200 dark:text-gray-800 absolute -top-4 -left-4 rotate-12 max-w-[80px] max-h-[80px]" />
+                <Hammer className="w-16 h-16 text-blue-500 absolute bottom-0 right-0" />
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div variants={fadeInUp} className="mt-6 max-w-2xl">
+            <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed text-center">
+              {SITE_DESCRIPTION}
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={fadeInUp}
+            className="flex items-center gap-4 pt-4"
+          >
+            {SOCIAL_LINKS.map(({ href, label, icon }) => (
+              <a
+                key={href}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300"
+                aria-label={label}
+              >
+                {icon}
+              </a>
+            ))}
+          </motion.div>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tighter leading-tight md:pr-8">
-          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {SITE_NAME}
-          </span>
-        </h1>
-
-        <div className="mt-6 flex flex-col gap-3">
-          <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
-            {SITE_DESCRIPTION}
-          </p>
-        </div>
-
-        {/* Social Links */}
-        <div className="flex items-center gap-4 pt-4">
-          {SOCIAL_LINKS.map(({ href, label, icon }) => (
-            <a
-              key={href}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-blue-600 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300"
-              aria-label={label}
+        <div className="w-full mt-12 grid md:grid-cols-3 gap-6">
+          {FEATURES.map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: index * 0.2,
+                duration: 0.5,
+              }}
+              className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 text-center"
             >
-              {icon}
-            </a>
+              <div className="flex justify-center items-center mb-4">
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {feature.description}
+              </p>
+            </motion.div>
           ))}
         </div>
-      </div>
-
-      {/* Visual Element */}
-      <div className="hidden md:flex items-center justify-center w-1/3">
-        <div className="relative">
-          <Bug className="w-24 h-24 text-gray-200 dark:text-gray-800 absolute -top-4 -left-4 rotate-12" />
-          <Hammer className="w-16 h-16 text-blue-500 absolute bottom-0 right-0" />
-        </div>
-      </div>
+      </motion.div>
     </section>
   );
 };
