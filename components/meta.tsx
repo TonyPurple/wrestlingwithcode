@@ -39,6 +39,7 @@ const Meta = ({
         sizes="180x180"
         href="/favicon/apple-touch-icon.png"
       />
+      <link rel="shortcut icon" href="/favicon/favicon.ico" />
       <link
         rel="icon"
         type="image/png"
@@ -57,7 +58,6 @@ const Meta = ({
         href="/favicon/safari-pinned-tab.svg"
         color="#000000"
       />
-      <link rel="shortcut icon" href="/favicon/favicon.ico" />
 
       {/* Microsoft Tile Configuration */}
       <meta name="msapplication-TileColor" content="#000000" />

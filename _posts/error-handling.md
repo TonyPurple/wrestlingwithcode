@@ -1,13 +1,13 @@
 ---
 title: "Handling Errors Like A Pro: A Quick Dive"
 excerpt: "Let's talk about errors, baby"
-coverImage: "/assets/blog/error-handling/cover.webp"
+coverImage: "/assets/blog/error-handling/cover.jpg"
 date: "2024-10-30T16:49:01Z"
 author:
   name: Tony Vanoni
   picture: "/assets/blog/authors/default.svg"
 ogImage:
-  url: "/assets/blog/error-handling/cover.webp"
+  url: "/assets/blog/error-handling/cover.jpg"
 ---
 
 We continue diving quickly, maybe even deeply, into Robert C. Martin's "Clean Code," and the key concepts. This morning's reading, Error Handling.
