@@ -104,8 +104,8 @@ const Intro = () => {
 
             <div className="flex-shrink-0 flex items-center">
               <div className="relative">
-                <Bug className="w-24 h-24 text-gray-200 dark:text-gray-800 absolute -top-4 -left-4 rotate-12 max-w-[80px] max-h-[80px]" />
-                <Hammer className="w-16 h-16 text-blue-500 absolute bottom-0 right-0" />
+              <Bug className="w-24 h-24 text-gray-200 dark:text-gray-800 absolute -top-4 -left-4 rotate-12 max-w-[80px] max-h-[80px] md:hidden" />
+              <Hammer className="w-16 h-16 text-blue-500 absolute bottom-0 right-0 md:hidden" />
               </div>
             </div>
           </motion.div>
