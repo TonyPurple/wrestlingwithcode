@@ -11,19 +11,24 @@ import Head from "next/head";
 import markdownToHtml from "../../lib/markdownToHtml";
 import { getPostShareUrl } from "../../lib/urlUtils";
 import type PostType from "../../interfaces/post";
+import MoreStories from "../../components/more-stories";
 
 type Props = {
   post: PostType;
-  morePosts: PostType[];
+  previousPost: PostType | null;
+  nextPost: PostType | null;
   preview?: boolean;
 };
 
-export default function Post({ post, morePosts, preview }: Props) {
+export default function Post({ post, previousPost, nextPost, preview }: Props) {
   const router = useRouter();
 
   if (!router.isFallback && !post?.slug) {
     return <ErrorPage statusCode={404} />;
   }
+
+  // Only show MoreStories if we have adjacent posts
+  const adjacentPosts = [previousPost, nextPost].filter(Boolean) as PostType[];
 
   return (
     <Layout preview={preview}>
@@ -38,31 +43,68 @@ export default function Post({ post, morePosts, preview }: Props) {
             </PostTitle>
           </div>
         ) : (
-          <article className="mb-32">
-            <Head>
-              <title>{`${post.title} | Wrestling with Code`}</title>
-              <meta property="og:image" content={post.ogImage.url} />
-              <meta
-                property="og:title"
-                content={`${post.title} | Wrestling with Code`}
-              />
-              <meta property="og:description" content={post.excerpt} />
-            </Head>
+          <>
+            <article className="mb-16">
+              <Head>
+                <title>{`${post.title} | Wrestling with Code`}</title>
+                <meta property="og:image" content={post.ogImage.url} />
+                <meta
+                  property="og:title"
+                  content={`${post.title} | Wrestling with Code`}
+                />
+                <meta property="og:description" content={post.excerpt} />
+              </Head>
 
-            <div className="space-y-12 md:space-y-16">
-              <PostHeader
-                title={post.title}
-                coverImage={post.coverImage}
-                date={post.date}
-                author={post.author}
-                shareUrl={getPostShareUrl(post.slug)}
-              />
+              <div className="space-y-12 md:space-y-16">
+                <PostHeader
+                  title={post.title}
+                  coverImage={post.coverImage}
+                  date={post.date}
+                  author={post.author}
+                  shareUrl={getPostShareUrl(post.slug)}
+                />
 
-              <div className="border-t border-blue-600/10" />
+                <div className="border-t border-blue-600/10" />
 
-              <PostBody content={post.content} />
-            </div>
-          </article>
+                <PostBody content={post.content} />
+              </div>
+            </article>
+
+            {adjacentPosts.length > 0 && (
+              <nav
+                className="border-t border-blue-600/10 pt-16"
+                aria-label="Post navigation"
+              >
+                <div className="flex justify-between items-center mb-8">
+                  {previousPost ? (
+                    <a
+                      href={`/posts/${previousPost.slug}`}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                    >
+                      ← Previous Post
+                    </a>
+                  ) : (
+                    <span />
+                  )}
+                  {nextPost ? (
+                    <a
+                      href={`/posts/${nextPost.slug}`}
+                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                    >
+                      Next Post →
+                    </a>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+                <MoreStories
+                  posts={adjacentPosts}
+                  className="md:grid-cols-2 gap-x-16"
+                  title="Read More"
+                />
+              </nav>
+            )}
+          </>
         )}
       </Container>
     </Layout>
@@ -90,12 +132,34 @@ export async function getStaticProps({ params }: Params) {
     typeof post.content === "string" ? post.content : ""
   );
 
+  // Get all posts sorted by date
+  const allPosts = getAllPosts([
+    "title",
+    "date",
+    "slug",
+    "author",
+    "coverImage",
+    "excerpt",
+  ]).sort((post1, post2) => (post1.date > post2.date ? -1 : 1)); // Newest first
+
+  // Find the index of the current post
+  const currentPostIndex = allPosts.findIndex((p) => p.slug === params.slug);
+
+  // Get adjacent posts
+  const previousPost =
+    currentPostIndex < allPosts.length - 1
+      ? allPosts[currentPostIndex + 1]
+      : null;
+  const nextPost = currentPostIndex > 0 ? allPosts[currentPostIndex - 1] : null;
+
   return {
     props: {
       post: {
         ...post,
         content,
       },
+      previousPost,
+      nextPost,
     },
   };
 }
