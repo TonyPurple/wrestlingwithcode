@@ -10,6 +10,8 @@ import Post from "../interfaces/post";
 import SearchBar from "../components/search-bar";
 import debounce from "lodash/debounce";
 
+const POSTS_PER_PAGE = 6; // Number of posts to load each time
+
 type Props = {
   allPosts: Post[];
 };
@@ -19,6 +21,19 @@ export default function Index({ allPosts }: Props) {
   const [filteredPosts, setFilteredPosts] = useState(allPosts);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Calculate whether there are more posts to load
+  const hasMorePosts = filteredPosts.length > displayedPosts.length;
+
+  // Update displayed posts when filtered posts change
+  useEffect(() => {
+    const initialPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
+    setDisplayedPosts(initialPosts);
+    setCurrentPage(1);
+  }, [filteredPosts]);
 
   // Debounced search function
   const debouncedSearch = useCallback(
@@ -49,10 +64,25 @@ export default function Index({ allPosts }: Props) {
     debouncedSearch(term);
   };
 
+  // Load more posts
+  const loadMorePosts = async () => {
+    setIsLoadingMore(true);
+
+    // Simulate loading delay for better UX
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const nextPage = currentPage + 1;
+    const startIndex = 0;
+    const endIndex = nextPage * POSTS_PER_PAGE;
+
+    setDisplayedPosts(filteredPosts.slice(startIndex, endIndex));
+    setCurrentPage(nextPage);
+    setIsLoadingMore(false);
+  };
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + K to focus search
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         const searchInput = document.getElementById("search-posts");
@@ -60,7 +90,6 @@ export default function Index({ allPosts }: Props) {
           searchInput.focus();
         }
       }
-      // Escape to clear search
       if (e.key === "Escape") {
         setSearchTerm("");
         setFilteredPosts(allPosts);
@@ -92,8 +121,8 @@ export default function Index({ allPosts }: Props) {
     );
   }
 
-  const heroPost = filteredPosts[0];
-  const morePosts = filteredPosts.slice(1);
+  const heroPost = displayedPosts[0];
+  const morePosts = displayedPosts.slice(1);
 
   return (
     <Layout>
@@ -112,8 +141,7 @@ export default function Index({ allPosts }: Props) {
               setFilteredPosts(allPosts);
             }}
           />
-          {/* Keyboard shortcut hint */}
-          <div className="text-sm text-gray-500 mt-2 text-center">
+          <div className="hidden md:block text-sm text-gray-500 mt-2 text-center">
             Press <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl K</kbd> to
             search, <kbd className="px-2 py-1 bg-gray-100 rounded">Esc</kbd> to
             clear
@@ -147,6 +175,23 @@ export default function Index({ allPosts }: Props) {
 
         {!isSearching && morePosts.length > 0 && (
           <MoreStories posts={morePosts} />
+        )}
+
+        {/* Load More Button */}
+        {hasMorePosts && !isSearching && (
+          <div className="text-center py-8">
+            <button
+              onClick={loadMorePosts}
+              disabled={isLoadingMore}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+            >
+              {isLoadingMore ? (
+                <span>Loading...</span>
+              ) : (
+                <span>Load More Posts</span>
+              )}
+            </button>
+          </div>
         )}
       </Container>
     </Layout>
