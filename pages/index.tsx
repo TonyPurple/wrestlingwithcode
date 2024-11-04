@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
-import debounce from "lodash/debounce";
 import Container from "../components/container";
 import MoreStories from "../components/more-stories";
 import HeroPost from "../components/hero-post";
@@ -34,29 +33,14 @@ export default function Index({ allPosts }: Props) {
     setCurrentPage(1);
   }, [filteredPosts]);
 
-  const debouncedSearch = useCallback(
-    debounce((term: string) => {
-      setIsSearching(true);
+  const handleSearch = (filtered: Post[]) => {
+    setFilteredPosts(filtered);
+    setIsSearching(false);
+  };
 
-      const filtered =
-        term.trim() === ""
-          ? allPosts
-          : allPosts.filter(
-              (post) =>
-                post.title.toLowerCase().includes(term.toLowerCase()) ||
-                post.excerpt.toLowerCase().includes(term.toLowerCase()) ||
-                post.plainTextContent.toLowerCase().includes(term.toLowerCase())
-            );
-
-      setFilteredPosts(filtered);
-      setIsSearching(false);
-    }, 300),
-    [allPosts]
-  );
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    debouncedSearch(term);
+  const handleClear = () => {
+    setSearchTerm("");
+    setFilteredPosts(allPosts);
   };
 
   const loadMorePosts = async () => {
@@ -126,12 +110,10 @@ export default function Index({ allPosts }: Props) {
           <SearchBar
             id="search-posts"
             value={searchTerm}
+            allPosts={allPosts}
             onChange={handleSearch}
             isSearching={isSearching}
-            onClear={() => {
-              setSearchTerm("");
-              setFilteredPosts(allPosts);
-            }}
+            onClear={handleClear}
           />
           <div className="hidden md:block text-sm text-gray-500 mt-2 text-center">
             Press <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl K</kbd> to
@@ -155,22 +137,21 @@ export default function Index({ allPosts }: Props) {
         )}
 
         {!isSearching && heroPost && (
-          <>
-            <HeroPost
-              title={heroPost.title}
-              coverImage={heroPost.coverImage}
-              date={heroPost.date}
-              author={heroPost.author}
-              slug={heroPost.slug}
-              excerpt={heroPost.excerpt}
-            />
-
-            <SectionSeparator className="my-8 border-gray-300" />
-          </>
+          <HeroPost
+            title={heroPost.title}
+            coverImage={heroPost.coverImage}
+            date={heroPost.date}
+            author={heroPost.author}
+            slug={heroPost.slug}
+            excerpt={heroPost.excerpt}
+          />
         )}
 
         {!isSearching && morePosts.length > 0 && (
-          <MoreStories posts={morePosts} />
+          <>
+            <SectionSeparator className="my-8 border-gray-300" />
+            <MoreStories posts={morePosts} />
+          </>
         )}
 
         {hasMorePosts && !isSearching && (
