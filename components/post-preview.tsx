@@ -40,7 +40,12 @@ const PostPreview = ({
       <meta itemProp="datePublished" content={date} />
       <meta itemProp="author" content={author.name} />
       <div className="relative mb-4">
-        <CoverImage title={title} src={coverImage} slug={slug} />
+        <CoverImage
+          title={title}
+          src={coverImage}
+          slug={slug}
+          priority={priority}
+        />
       </div>
       <div className="flex flex-col">
         <h3 className="mb-2 text-2xl font-bold leading-tight group-hover:text-blue-600 transition-colors duration-200">
@@ -53,7 +58,6 @@ const PostPreview = ({
             {title}
           </Link>
         </h3>
-        {/* Meta Information */}
         <div className="flex flex-wrap items-center gap-4 mb-2 text-sm text-gray-600 dark:text-gray-400">
           <time dateTime={date}>
             <DateFormatter dateString={date} />
@@ -66,14 +70,12 @@ const PostPreview = ({
             </div>
           )}
         </div>
-        {/* Excerpt */}
         <p
           className="text-base leading-relaxed text-gray-700 dark:text-gray-300 mb-4"
           itemProp="description"
         >
           {excerpt}
         </p>
-        {/* Author & Read More */}
         <div className="flex items-center justify-between pt-4 border-t dark:border-gray-800">
           <Avatar
             name={author.name}

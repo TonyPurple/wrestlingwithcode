@@ -6,20 +6,26 @@ interface CoverImageProps {
   title: string;
   src: string;
   slug?: string;
+  priority?: boolean;
 }
 
-const CoverImage = ({ title, src, slug }: CoverImageProps) => {
+const CoverImage = ({
+  title,
+  src,
+  slug,
+  priority = false,
+}: CoverImageProps) => {
   const image = (
     <div className="relative">
       <Image
         src={src}
-        alt={title}
+        alt={`Cover Image for ${title}`}
         className={cn("shadow-sm w-full shadow-indigo-500/50", {
           "hover:shadow-lg transition-shadow duration-200": slug,
         })}
         width={2000}
         height={1000}
-        priority
+        priority={priority}
       />
       <div
         className={cn(

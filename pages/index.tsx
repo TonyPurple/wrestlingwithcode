@@ -1,86 +1,95 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import axios from "axios";
+import Head from "next/head";
 import Container from "../components/container";
 import MoreStories from "../components/more-stories";
 import HeroPost from "../components/hero-post";
 import Intro from "../components/intro";
 import Layout from "../components/layout";
-import { getAllPosts } from "../lib/api";
-import Head from "next/head";
-import Post from "../interfaces/post";
 import SearchBar from "../components/search-bar";
-import debounce from "lodash/debounce";
+import SectionSeparator from "../components/section-separator";
+import Post from "../interfaces/post";
 
-const POSTS_PER_PAGE = 6; // Number of posts to load each time
-
-type Props = {
-  allPosts: Post[];
-};
-
-export default function Index({ allPosts }: Props) {
-  // State for filtered posts and loading state
-  const [filteredPosts, setFilteredPosts] = useState(allPosts);
+export default function Index() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [searchResults, setSearchResults] = useState<Post[]>([]);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Calculate whether there are more posts to load
-  const hasMorePosts = filteredPosts.length > displayedPosts.length;
+  const currentPageRef = useRef(1);
+  const isLoadingMoreRef = useRef(false);
 
-  // Update displayed posts when filtered posts change
+  const observer = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const loadPosts = useCallback(async () => {
+    if (isLoadingMoreRef.current || !hasMorePosts || isSearching) return;
+
+    isLoadingMoreRef.current = true;
+
+    try {
+      const response = await axios.get("/api/posts", {
+        params: { page: currentPageRef.current },
+      });
+
+      const newPosts = response.data.posts;
+
+      setPosts((prevPosts) => {
+        const postsSet = new Set(prevPosts.map((post) => post.slug));
+        const uniqueNewPosts = newPosts.filter(
+          (post) => !postsSet.has(post.slug)
+        );
+        return [...prevPosts, ...uniqueNewPosts];
+      });
+
+      setHasMorePosts(response.data.hasMore);
+      currentPageRef.current += 1;
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      isLoadingMoreRef.current = false;
+    }
+  }, [hasMorePosts, isSearching]);
+
   useEffect(() => {
-    const initialPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
-    setDisplayedPosts(initialPosts);
-    setCurrentPage(1);
-  }, [filteredPosts]);
+    loadPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Load initial posts on mount
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((term: string) => {
-      setIsSearching(true);
+  useEffect(() => {
+    if (observer.current) observer.current.disconnect();
 
-      const filtered =
-        term.trim() === ""
-          ? allPosts
-          : allPosts.filter(
-              (post) =>
-                post.title.toLowerCase().includes(term.toLowerCase()) ||
-                post.excerpt.toLowerCase().includes(term.toLowerCase()) ||
-                (post.author?.name?.toLowerCase() || "").includes(
-                  term.toLowerCase()
-                )
-            );
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMorePosts && !isSearching) {
+          loadPosts();
+        }
+      },
+      { rootMargin: "100px" }
+    );
 
-      setFilteredPosts(filtered);
-      setIsSearching(false);
-    }, 300),
-    [allPosts]
-  );
+    if (sentinelRef.current) {
+      observer.current.observe(sentinelRef.current);
+    }
 
-  // Handle search updates
-  const handleSearch = (term: string) => {
+    // Cleanup on unmount
+    return () => observer.current?.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMorePosts, isSearching]);
+
+  const handleSearch = (filtered: Post[], term: string) => {
+    setSearchResults(filtered);
     setSearchTerm(term);
-    debouncedSearch(term);
+    setIsSearching(term.trim() !== "");
   };
 
-  // Load more posts
-  const loadMorePosts = async () => {
-    setIsLoadingMore(true);
-
-    // Simulate loading delay for better UX
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const nextPage = currentPage + 1;
-    const startIndex = 0;
-    const endIndex = nextPage * POSTS_PER_PAGE;
-
-    setDisplayedPosts(filteredPosts.slice(startIndex, endIndex));
-    setCurrentPage(nextPage);
-    setIsLoadingMore(false);
+  const handleClear = () => {
+    setSearchTerm("");
+    setSearchResults([]);
+    setIsSearching(false);
   };
 
-  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -90,39 +99,24 @@ export default function Index({ allPosts }: Props) {
           searchInput.focus();
         }
       }
-      if (e.key === "Escape") {
-        setSearchTerm("");
-        setFilteredPosts(allPosts);
-        const searchInput = document.getElementById(
-          "search-posts"
-        ) as HTMLInputElement;
-        if (searchInput) {
-          searchInput.value = "";
-          searchInput.blur();
-        }
+      if (e.key !== "Escape") {
+        return;
+      }
+      handleClear();
+      const searchInput = document.getElementById(
+        "search-posts"
+      ) as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.blur();
       }
     };
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [allPosts]);
+  }, []);
 
-  if (!allPosts || allPosts.length === 0) {
-    return (
-      <Layout>
-        <Head>
-          <title>Wrestling with Code</title>
-        </Head>
-        <Container>
-          <Intro />
-          <p>No posts available.</p>
-        </Container>
-      </Layout>
-    );
-  }
-
-  const heroPost = displayedPosts[0];
-  const morePosts = displayedPosts.slice(1);
+  const displayPosts = isSearching ? searchResults : posts;
 
   return (
     <Layout>
@@ -135,11 +129,7 @@ export default function Index({ allPosts }: Props) {
             id="search-posts"
             value={searchTerm}
             onChange={handleSearch}
-            isSearching={isSearching}
-            onClear={() => {
-              setSearchTerm("");
-              setFilteredPosts(allPosts);
-            }}
+            onClear={handleClear}
           />
           <div className="hidden md:block text-sm text-gray-500 mt-2 text-center">
             Press <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl K</kbd> to
@@ -147,68 +137,54 @@ export default function Index({ allPosts }: Props) {
             clear
           </div>
         </div>
+
+        <SectionSeparator className="my-8 border-gray-300" />
+
         <Intro />
 
-        {/* No results message */}
-        {filteredPosts.length === 0 && searchTerm && !isSearching && (
+        {isSearching && searchTerm && searchResults.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             No posts found for "{searchTerm}"
           </div>
         )}
 
-        {/* Loading state */}
-        {isSearching && (
-          <div className="text-center py-4 text-gray-500">Searching...</div>
+        {!isSearching && displayPosts.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            No posts available.
+          </div>
         )}
 
-        {/* Results */}
-        {!isSearching && heroPost && (
-          <HeroPost
-            title={heroPost.title}
-            coverImage={heroPost.coverImage}
-            date={heroPost.date}
-            author={heroPost.author}
-            slug={heroPost.slug}
-            excerpt={heroPost.excerpt}
-          />
+        {displayPosts.length > 0 && (
+          <>
+            <HeroPost
+              title={displayPosts[0].title}
+              coverImage={displayPosts[0].coverImage}
+              date={displayPosts[0].date}
+              author={displayPosts[0].author}
+              slug={displayPosts[0].slug}
+              excerpt={displayPosts[0].excerpt}
+            />
+            {displayPosts.length > 1 && (
+              <>
+                <SectionSeparator className="my-8 border-gray-300" />
+                <MoreStories posts={displayPosts.slice(1)} />
+              </>
+            )}
+          </>
         )}
 
-        {!isSearching && morePosts.length > 0 && (
-          <MoreStories posts={morePosts} />
+        {isLoadingMoreRef.current && !isSearching && (
+          <div className="text-center py-8 text-gray-500">Loading...</div>
         )}
 
-        {/* Load More Button */}
-        {hasMorePosts && !isSearching && (
-          <div className="text-center py-8">
-            <button
-              onClick={loadMorePosts}
-              disabled={isLoadingMore}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
-            >
-              {isLoadingMore ? (
-                <span>Loading...</span>
-              ) : (
-                <span>Load More Posts</span>
-              )}
-            </button>
+        {!isSearching && <div ref={sentinelRef} />}
+
+        {!hasMorePosts && !isSearching && (
+          <div className="text-center py-8 text-gray-500">
+            You have reached the end of the list.
           </div>
         )}
       </Container>
     </Layout>
   );
 }
-
-export const getStaticProps = async () => {
-  const allPosts = getAllPosts([
-    "title",
-    "date",
-    "slug",
-    "author",
-    "coverImage",
-    "excerpt",
-  ]);
-
-  return {
-    props: { allPosts },
-  };
-};
