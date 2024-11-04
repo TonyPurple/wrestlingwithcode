@@ -1,41 +1,46 @@
 import React, { useState, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import debounce from "lodash/debounce";
+import axios from "axios";
 import Post from "../interfaces/post";
 
 interface SearchBarProps {
   id?: string;
   value: string;
-  allPosts: Post[];
-  onChange: (filteredPosts: Post[]) => void;
-  isSearching?: boolean;
+  onChange: (filteredPosts: Post[], searchTerm: string) => void;
   onClear: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
   id,
   value,
-  allPosts,
   onChange,
-  isSearching,
   onClear,
 }) => {
   const [searchTerm, setSearchTerm] = useState(value);
+  const [isSearching, setIsSearching] = useState(false);
 
   const debouncedSearch = useCallback(
-    debounce((term: string) => {
-      const filtered =
-        term.trim() === ""
-          ? []
-          : allPosts.filter(
-              (post) =>
-                post.title.toLowerCase().includes(term.toLowerCase()) ||
-                post.excerpt.toLowerCase().includes(term.toLowerCase()) ||
-                post.plainTextContent.toLowerCase().includes(term.toLowerCase())
-            );
-      onChange(filtered);
+    debounce(async (term: string) => {
+      if (term.trim() === "") {
+        onChange([], term);
+        setIsSearching(false);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const response = await axios.get("/api/search", {
+          params: { q: term },
+        });
+        onChange(response.data, term);
+      } catch (error) {
+        console.error("Error searching posts:", error);
+        onChange([], term);
+      } finally {
+        setIsSearching(false);
+      }
     }, 300),
-    [allPosts, onChange]
+    [onChange]
   );
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import axios from "axios";
 import Head from "next/head";
 import Container from "../components/container";
 import MoreStories from "../components/more-stories";
@@ -7,54 +8,86 @@ import Intro from "../components/intro";
 import Layout from "../components/layout";
 import SearchBar from "../components/search-bar";
 import SectionSeparator from "../components/section-separator";
-import { getAllPosts } from "../lib/api";
-import { markdownToPlainText } from "../lib/markdownToHtml";
 import Post from "../interfaces/post";
 
-const POSTS_PER_PAGE = 6;
-
-type Props = {
-  allPosts: Post[];
-};
-
-export default function Index({ allPosts }: Props) {
-  const [filteredPosts, setFilteredPosts] = useState(allPosts);
+export default function Index() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [searchResults, setSearchResults] = useState<Post[]>([]);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const hasMorePosts = filteredPosts.length > displayedPosts.length;
+  const currentPageRef = useRef(1);
+  const isLoadingMoreRef = useRef(false);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const loadPosts = useCallback(async () => {
+    if (isLoadingMoreRef.current || !hasMorePosts || isSearching) return;
+
+    isLoadingMoreRef.current = true;
+
+    try {
+      const response = await axios.get("/api/posts", {
+        params: { page: currentPageRef.current },
+      });
+
+      const newPosts = response.data.posts;
+
+      setPosts((prevPosts) => {
+        const postsSet = new Set(prevPosts.map((post) => post.slug));
+        const uniqueNewPosts = newPosts.filter(
+          (post) => !postsSet.has(post.slug)
+        );
+        return [...prevPosts, ...uniqueNewPosts];
+      });
+
+      setHasMorePosts(response.data.hasMore);
+      currentPageRef.current += 1;
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      isLoadingMoreRef.current = false;
+    }
+  }, [hasMorePosts, isSearching]);
 
   useEffect(() => {
-    const initialPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
-    setDisplayedPosts(initialPosts);
-    setCurrentPage(1);
-  }, [filteredPosts]);
+    loadPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Load initial posts on mount
 
-  const handleSearch = (filtered: Post[]) => {
-    setFilteredPosts(filtered);
-    setIsSearching(false);
+  useEffect(() => {
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMorePosts && !isSearching) {
+          loadPosts();
+        }
+      },
+      { rootMargin: "100px" }
+    );
+
+    if (sentinelRef.current) {
+      observer.current.observe(sentinelRef.current);
+    }
+
+    // Cleanup on unmount
+    return () => observer.current?.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMorePosts, isSearching]);
+
+  const handleSearch = (filtered: Post[], term: string) => {
+    setSearchResults(filtered);
+    setSearchTerm(term);
+    setIsSearching(term.trim() !== "");
   };
 
   const handleClear = () => {
     setSearchTerm("");
-    setFilteredPosts(allPosts);
-  };
-
-  const loadMorePosts = async () => {
-    setIsLoadingMore(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const nextPage = currentPage + 1;
-    const startIndex = 0;
-    const endIndex = nextPage * POSTS_PER_PAGE;
-
-    setDisplayedPosts(filteredPosts.slice(startIndex, endIndex));
-    setCurrentPage(nextPage);
-    setIsLoadingMore(false);
+    setSearchResults([]);
+    setIsSearching(false);
   };
 
   useEffect(() => {
@@ -66,39 +99,24 @@ export default function Index({ allPosts }: Props) {
           searchInput.focus();
         }
       }
-      if (e.key === "Escape") {
-        setSearchTerm("");
-        setFilteredPosts(allPosts);
-        const searchInput = document.getElementById(
-          "search-posts"
-        ) as HTMLInputElement;
-        if (searchInput) {
-          searchInput.value = "";
-          searchInput.blur();
-        }
+      if (e.key !== "Escape") {
+        return;
+      }
+      handleClear();
+      const searchInput = document.getElementById(
+        "search-posts"
+      ) as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.blur();
       }
     };
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [allPosts]);
+  }, []);
 
-  if (!allPosts || allPosts.length === 0) {
-    return (
-      <Layout>
-        <Head>
-          <title>Wrestling with Code</title>
-        </Head>
-        <Container>
-          <Intro />
-          <p>No posts available.</p>
-        </Container>
-      </Layout>
-    );
-  }
-
-  const heroPost = displayedPosts[0];
-  const morePosts = displayedPosts.slice(1);
+  const displayPosts = isSearching ? searchResults : posts;
 
   return (
     <Layout>
@@ -110,9 +128,7 @@ export default function Index({ allPosts }: Props) {
           <SearchBar
             id="search-posts"
             value={searchTerm}
-            allPosts={allPosts}
             onChange={handleSearch}
-            isSearching={isSearching}
             onClear={handleClear}
           />
           <div className="hidden md:block text-sm text-gray-500 mt-2 text-center">
@@ -126,78 +142,49 @@ export default function Index({ allPosts }: Props) {
 
         <Intro />
 
-        {filteredPosts.length === 0 && searchTerm && !isSearching && (
+        {isSearching && searchTerm && searchResults.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             No posts found for "{searchTerm}"
           </div>
         )}
 
-        {isSearching && (
-          <div className="text-center py-4 text-gray-500">Searching...</div>
+        {!isSearching && displayPosts.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            No posts available.
+          </div>
         )}
 
-        {!isSearching && heroPost && (
-          <HeroPost
-            title={heroPost.title}
-            coverImage={heroPost.coverImage}
-            date={heroPost.date}
-            author={heroPost.author}
-            slug={heroPost.slug}
-            excerpt={heroPost.excerpt}
-          />
-        )}
-
-        {!isSearching && morePosts.length > 0 && (
+        {displayPosts.length > 0 && (
           <>
-            <SectionSeparator className="my-8 border-gray-300" />
-            <MoreStories posts={morePosts} />
+            <HeroPost
+              title={displayPosts[0].title}
+              coverImage={displayPosts[0].coverImage}
+              date={displayPosts[0].date}
+              author={displayPosts[0].author}
+              slug={displayPosts[0].slug}
+              excerpt={displayPosts[0].excerpt}
+            />
+            {displayPosts.length > 1 && (
+              <>
+                <SectionSeparator className="my-8 border-gray-300" />
+                <MoreStories posts={displayPosts.slice(1)} />
+              </>
+            )}
           </>
         )}
 
-        {hasMorePosts && !isSearching && (
-          <>
-            <SectionSeparator className="my-8 border-gray-300" />
+        {isLoadingMoreRef.current && !isSearching && (
+          <div className="text-center py-8 text-gray-500">Loading...</div>
+        )}
 
-            <div className="text-center py-8">
-              <button
-                onClick={loadMorePosts}
-                disabled={isLoadingMore}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
-              >
-                {isLoadingMore ? (
-                  <span>Loading...</span>
-                ) : (
-                  <span>Load More Posts</span>
-                )}
-              </button>
-            </div>
-          </>
+        {!isSearching && <div ref={sentinelRef} />}
+
+        {!hasMorePosts && !isSearching && (
+          <div className="text-center py-8 text-gray-500">
+            You have reached the end of the list.
+          </div>
         )}
       </Container>
     </Layout>
   );
 }
-
-export const getStaticProps = async () => {
-  const rawPosts = getAllPosts([
-    "title",
-    "date",
-    "slug",
-    "author",
-    "coverImage",
-    "excerpt",
-    "content",
-  ]);
-
-  // Process posts to add plainTextContent for search indexing
-  const allPosts = await Promise.all(
-    rawPosts.map(async (post) => {
-      const plainTextContent = await markdownToPlainText(String(post.content));
-      return { ...post, plainTextContent };
-    })
-  );
-
-  return {
-    props: { allPosts },
-  };
-};
