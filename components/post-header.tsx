@@ -31,7 +31,7 @@ const PostHeader: React.FC<Props> = ({
       </div>
 
       <div className="mb-8 md:mb-16 sm:mx-0 transition-all duration-200">
-        <CoverImage title={title} src={coverImage} />
+        <CoverImage title={title} src={coverImage} priority />
       </div>
 
       <div className="max-w-2xl mx-auto">

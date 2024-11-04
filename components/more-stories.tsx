@@ -41,7 +41,7 @@ const MoreStories: React.FC<Props> = ({
             author={post.author}
             slug={post.slug}
             excerpt={post.excerpt}
-            priority={index <= 1} // Prioritize loading first two images
+            priority={index <= 1}
           />
         ))}
       </div>

@@ -131,6 +131,13 @@
   dependencies:
     "@types/unist" "*"
 
+"@types/mdast@^4.0.0":
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/@types/mdast/-/mdast-4.0.4.tgz#7ccf72edd2f1aa7dd3437e180c64373585804dd6"
+  integrity sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==
+  dependencies:
+    "@types/unist" "*"
+
 "@types/ms@*":
   version "0.7.31"
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
@@ -1188,6 +1195,13 @@ strip-bom-string@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/strip-bom-string/-/strip-bom-string-1.0.0.tgz#e5211e9224369fbb81d633a2f00044dc8cedad92"
   integrity sha512-uCC2VHvQRYu+lMh4My/sFNmF2klFymLX1wHJeXnbEJERpV/ZsVuonzerjfrGpIGF7LBVa1O7i9kjiWvJiFck8g==
+
+strip-markdown@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/strip-markdown/-/strip-markdown-6.0.0.tgz#7d9fba3b25ddfa3859b928ecb08029ef0825aac5"
+  integrity sha512-mSa8FtUoX3ExJYDkjPUTC14xaBAn4Ik5GPQD45G5E2egAmeV3kHgVSTfIoSDggbF6Pk9stahVgqsLCNExv6jHw==
+  dependencies:
+    "@types/mdast" "^4.0.0"
 
 styled-jsx@5.1.1:
   version "5.1.1"

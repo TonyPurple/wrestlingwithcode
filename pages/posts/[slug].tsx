@@ -1,17 +1,18 @@
 import { useRouter } from "next/router";
 import ErrorPage from "next/error";
+import Head from "next/head";
 import Container from "../../components/container";
 import PostBody from "../../components/post-body";
 import Header from "../../components/header";
 import PostHeader from "../../components/post-header";
 import Layout from "../../components/layout";
-import { getPostBySlug, getAllPosts } from "../../lib/api";
 import PostTitle from "../../components/post-title";
-import Head from "next/head";
-import markdownToHtml from "../../lib/markdownToHtml";
+import MoreStories from "../../components/more-stories";
+import SectionSeparator from "../../components/section-separator";
+import { getPostBySlug, getAllPosts } from "../../lib/api";
+import { markdownToHtml } from "../../lib/markdownToHtml";
 import { getPostShareUrl } from "../../lib/urlUtils";
 import type PostType from "../../interfaces/post";
-import MoreStories from "../../components/more-stories";
 
 type Props = {
   post: PostType;
@@ -27,7 +28,6 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
     return <ErrorPage statusCode={404} />;
   }
 
-  // Only show MoreStories if we have adjacent posts
   const adjacentPosts = [previousPost, nextPost].filter(Boolean) as PostType[];
 
   return (
@@ -64,7 +64,7 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
                   shareUrl={getPostShareUrl(post.slug)}
                 />
 
-                <div className="border-t border-blue-600/10" />
+                <SectionSeparator className="my-8 border-gray-200" />
 
                 <PostBody content={post.content} />
               </div>
@@ -86,6 +86,9 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
                   ) : (
                     <span />
                   )}
+
+                  <SectionSeparator className="mx-4 h-px flex-grow bg-gray-300" />
+
                   {nextPost ? (
                     <a
                       href={`/posts/${nextPost.slug}`}
@@ -97,6 +100,7 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
                     <span />
                   )}
                 </div>
+
                 <MoreStories
                   posts={adjacentPosts}
                   className="md:grid-cols-2 gap-x-16"
@@ -132,7 +136,6 @@ export async function getStaticProps({ params }: Params) {
     typeof post.content === "string" ? post.content : ""
   );
 
-  // Get all posts sorted by date
   const allPosts = getAllPosts([
     "title",
     "date",
@@ -142,10 +145,8 @@ export async function getStaticProps({ params }: Params) {
     "excerpt",
   ]).sort((post1, post2) => (post1.date > post2.date ? -1 : 1)); // Newest first
 
-  // Find the index of the current post
   const currentPostIndex = allPosts.findIndex((p) => p.slug === params.slug);
 
-  // Get adjacent posts
   const previousPost =
     currentPostIndex < allPosts.length - 1
       ? allPosts[currentPostIndex + 1]

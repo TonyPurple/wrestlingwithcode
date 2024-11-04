@@ -1,23 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
+import Head from "next/head";
+import debounce from "lodash/debounce";
 import Container from "../components/container";
 import MoreStories from "../components/more-stories";
 import HeroPost from "../components/hero-post";
 import Intro from "../components/intro";
 import Layout from "../components/layout";
-import { getAllPosts } from "../lib/api";
-import Head from "next/head";
-import Post from "../interfaces/post";
 import SearchBar from "../components/search-bar";
-import debounce from "lodash/debounce";
+import SectionSeparator from "../components/section-separator";
+import { getAllPosts } from "../lib/api";
+import { markdownToPlainText } from "../lib/markdownToHtml";
+import Post from "../interfaces/post";
 
-const POSTS_PER_PAGE = 6; // Number of posts to load each time
+const POSTS_PER_PAGE = 6;
 
 type Props = {
   allPosts: Post[];
 };
 
 export default function Index({ allPosts }: Props) {
-  // State for filtered posts and loading state
   const [filteredPosts, setFilteredPosts] = useState(allPosts);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,17 +26,14 @@ export default function Index({ allPosts }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Calculate whether there are more posts to load
   const hasMorePosts = filteredPosts.length > displayedPosts.length;
 
-  // Update displayed posts when filtered posts change
   useEffect(() => {
     const initialPosts = filteredPosts.slice(0, POSTS_PER_PAGE);
     setDisplayedPosts(initialPosts);
     setCurrentPage(1);
   }, [filteredPosts]);
 
-  // Debounced search function
   const debouncedSearch = useCallback(
     debounce((term: string) => {
       setIsSearching(true);
@@ -47,9 +45,7 @@ export default function Index({ allPosts }: Props) {
               (post) =>
                 post.title.toLowerCase().includes(term.toLowerCase()) ||
                 post.excerpt.toLowerCase().includes(term.toLowerCase()) ||
-                (post.author?.name?.toLowerCase() || "").includes(
-                  term.toLowerCase()
-                )
+                post.plainTextContent.toLowerCase().includes(term.toLowerCase())
             );
 
       setFilteredPosts(filtered);
@@ -58,17 +54,14 @@ export default function Index({ allPosts }: Props) {
     [allPosts]
   );
 
-  // Handle search updates
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     debouncedSearch(term);
   };
 
-  // Load more posts
   const loadMorePosts = async () => {
     setIsLoadingMore(true);
 
-    // Simulate loading delay for better UX
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const nextPage = currentPage + 1;
@@ -80,7 +73,6 @@ export default function Index({ allPosts }: Props) {
     setIsLoadingMore(false);
   };
 
-  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -147,51 +139,58 @@ export default function Index({ allPosts }: Props) {
             clear
           </div>
         </div>
+
+        <SectionSeparator className="my-8 border-gray-300" />
+
         <Intro />
 
-        {/* No results message */}
         {filteredPosts.length === 0 && searchTerm && !isSearching && (
           <div className="text-center py-8 text-gray-500">
             No posts found for "{searchTerm}"
           </div>
         )}
 
-        {/* Loading state */}
         {isSearching && (
           <div className="text-center py-4 text-gray-500">Searching...</div>
         )}
 
-        {/* Results */}
         {!isSearching && heroPost && (
-          <HeroPost
-            title={heroPost.title}
-            coverImage={heroPost.coverImage}
-            date={heroPost.date}
-            author={heroPost.author}
-            slug={heroPost.slug}
-            excerpt={heroPost.excerpt}
-          />
+          <>
+            <HeroPost
+              title={heroPost.title}
+              coverImage={heroPost.coverImage}
+              date={heroPost.date}
+              author={heroPost.author}
+              slug={heroPost.slug}
+              excerpt={heroPost.excerpt}
+            />
+
+            <SectionSeparator className="my-8 border-gray-300" />
+          </>
         )}
 
         {!isSearching && morePosts.length > 0 && (
           <MoreStories posts={morePosts} />
         )}
 
-        {/* Load More Button */}
         {hasMorePosts && !isSearching && (
-          <div className="text-center py-8">
-            <button
-              onClick={loadMorePosts}
-              disabled={isLoadingMore}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
-            >
-              {isLoadingMore ? (
-                <span>Loading...</span>
-              ) : (
-                <span>Load More Posts</span>
-              )}
-            </button>
-          </div>
+          <>
+            <SectionSeparator className="my-8 border-gray-300" />
+
+            <div className="text-center py-8">
+              <button
+                onClick={loadMorePosts}
+                disabled={isLoadingMore}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+              >
+                {isLoadingMore ? (
+                  <span>Loading...</span>
+                ) : (
+                  <span>Load More Posts</span>
+                )}
+              </button>
+            </div>
+          </>
         )}
       </Container>
     </Layout>
@@ -199,14 +198,23 @@ export default function Index({ allPosts }: Props) {
 }
 
 export const getStaticProps = async () => {
-  const allPosts = getAllPosts([
+  const rawPosts = getAllPosts([
     "title",
     "date",
     "slug",
     "author",
     "coverImage",
     "excerpt",
+    "content",
   ]);
+
+  // Process posts to add plainTextContent for search indexing
+  const allPosts = await Promise.all(
+    rawPosts.map(async (post) => {
+      const plainTextContent = await markdownToPlainText(String(post.content));
+      return { ...post, plainTextContent };
+    })
+  );
 
   return {
     props: { allPosts },
