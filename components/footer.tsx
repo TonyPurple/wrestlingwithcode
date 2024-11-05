@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { SiLinkedin } from "@icons-pack/react-simple-icons";
 import Container from "./container";
+import Link from "next/link";
 
 interface SocialLink {
   href: string;
@@ -30,9 +31,11 @@ const Footer = () => {
       <Container>
         <div className="flex flex-col lg:flex-row items-center justify-between py-16 md:py-20">
           <div className="mb-8 lg:mb-0">
-            <h3 className="text-4xl lg:text-5xl font-bold tracking-tighter leading-tight text-center lg:text-left bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {SITE_NAME}
-            </h3>
+            <Link href="/">
+              <h3 className="text-4xl lg:text-5xl font-bold tracking-tighter leading-tight text-center lg:text-left bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent cursor-pointer">
+                {SITE_NAME}
+              </h3>
+            </Link>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
               © {currentYear} {SITE_NAME}. All rights reserved.
             </p>
@@ -59,5 +62,4 @@ const Footer = () => {
   );
 };
 
-// Memoize the footer since it doesn't need frequent re-renders
 export default memo(Footer);
