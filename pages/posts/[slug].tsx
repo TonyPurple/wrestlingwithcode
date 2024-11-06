@@ -9,6 +9,7 @@ import Layout from "../../components/layout";
 import PostTitle from "../../components/post-title";
 import MoreStories from "../../components/more-stories";
 import SectionSeparator from "../../components/section-separator";
+import PostNavigation from "../../components/post-navigation";
 import { getPostBySlug, getAllPosts } from "../../lib/api";
 import { markdownToHtml } from "../../lib/markdownToHtml";
 import { getPostShareUrl } from "../../lib/urlUtils";
@@ -70,43 +71,14 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
               </div>
             </article>
 
+            <PostNavigation previousPost={previousPost} nextPost={nextPost} />
+
             {adjacentPosts.length > 0 && (
-              <nav
-                className="border-t border-blue-600/10 pt-16"
-                aria-label="Post navigation"
-              >
-                <div className="flex justify-between items-center mb-8">
-                  {previousPost ? (
-                    <a
-                      href={`/posts/${previousPost.slug}`}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                    >
-                      ← Previous Post
-                    </a>
-                  ) : (
-                    <span />
-                  )}
-
-                  <SectionSeparator className="mx-4 h-px flex-grow bg-gray-300" />
-
-                  {nextPost ? (
-                    <a
-                      href={`/posts/${nextPost.slug}`}
-                      className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                    >
-                      Next Post →
-                    </a>
-                  ) : (
-                    <span />
-                  )}
-                </div>
-
-                <MoreStories
-                  posts={adjacentPosts}
-                  className="md:grid-cols-2 gap-x-16"
-                  title="Read More"
-                />
-              </nav>
+              <MoreStories
+                posts={adjacentPosts}
+                className="md:grid-cols-2 gap-x-16"
+                title="Read More"
+              />
             )}
           </>
         )}
@@ -179,3 +151,4 @@ export async function getStaticPaths() {
     fallback: false,
   };
 }
+
