@@ -1,120 +1,44 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
+import { useState, useRef, useCallback } from "react";
 import Head from "next/head";
 import Container from "../components/container";
 import MoreStories from "../components/more-stories";
 import HeroPost from "../components/hero-post";
 import Intro from "../components/intro";
 import Layout from "../components/layout";
-import SearchBar from "../components/search-bar";
+import SearchBar, { SearchBarHandle } from "../components/search-bar";
 import SectionSeparator from "../components/section-separator";
 import Post from "../interfaces/post";
+import { usePostLoader } from "../hooks/usePostLoader";
+import { useInfiniteScrollObserver } from "../hooks/useInfiniteScrollObserver";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 export default function Index() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts, loadPosts, hasMorePosts, isLoadingMoreRef } = usePostLoader();
   const [searchResults, setSearchResults] = useState<Post[]>([]);
-  const [hasMorePosts, setHasMorePosts] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const currentPageRef = useRef(1);
-  const isLoadingMoreRef = useRef(false);
+  const sentinelRef = useInfiniteScrollObserver(
+    loadPosts,
+    !isSearching && hasMorePosts
+  );
 
-  const observer = useRef<IntersectionObserver | null>(null);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  const loadPosts = useCallback(async () => {
-    if (isLoadingMoreRef.current || !hasMorePosts || isSearching) return;
-
-    isLoadingMoreRef.current = true;
-
-    try {
-      const response = await axios.get("/api/posts", {
-        params: { page: currentPageRef.current },
-      });
-
-      const newPosts = response.data.posts;
-
-      setPosts((prevPosts) => {
-        const postsSet = new Set(prevPosts.map((post) => post.slug));
-        const uniqueNewPosts = newPosts.filter(
-          (post) => !postsSet.has(post.slug)
-        );
-        return [...prevPosts, ...uniqueNewPosts];
-      });
-
-      setHasMorePosts(response.data.hasMore);
-      currentPageRef.current += 1;
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      isLoadingMoreRef.current = false;
-    }
-  }, [hasMorePosts, isSearching]);
-
-  useEffect(() => {
-    loadPosts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Load initial posts on mount
-
-  useEffect(() => {
-    if (observer.current) observer.current.disconnect();
-
-    observer.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMorePosts && !isSearching) {
-          loadPosts();
-        }
-      },
-      { rootMargin: "100px" }
-    );
-
-    if (sentinelRef.current) {
-      observer.current.observe(sentinelRef.current);
-    }
-
-    // Cleanup on unmount
-    return () => observer.current?.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMorePosts, isSearching]);
-
-  const handleSearch = (filtered: Post[], term: string) => {
+  const handleSearch = useCallback((filtered: Post[], term: string) => {
     setSearchResults(filtered);
     setSearchTerm(term);
     setIsSearching(term.trim() !== "");
-  };
+  }, []);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
+    searchInputRef.current?.clear();
     setSearchTerm("");
     setSearchResults([]);
     setIsSearching(false);
-  };
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        const searchInput = document.getElementById("search-posts");
-        if (searchInput) {
-          searchInput.focus();
-        }
-      }
-      if (e.key !== "Escape") {
-        return;
-      }
-      handleClear();
-      const searchInput = document.getElementById(
-        "search-posts"
-      ) as HTMLInputElement;
-      if (searchInput) {
-        searchInput.value = "";
-        searchInput.blur();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
-    return () => document.removeEventListener("keydown", handleKeyPress);
   }, []);
+
+  const searchInputRef = useRef<SearchBarHandle>(null);
+
+  useKeyboardShortcuts(handleClear, searchInputRef);
 
   const displayPosts = isSearching ? searchResults : posts;
 
@@ -127,9 +51,9 @@ export default function Index() {
         <div className="relative w-full max-w-xl mx-auto mb-8 mt-4">
           <SearchBar
             id="search-posts"
-            value={searchTerm}
             onChange={handleSearch}
             onClear={handleClear}
+            ref={searchInputRef}
           />
           <div className="hidden md:block text-sm text-gray-500 mt-2 text-center">
             Press <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl K</kbd> to
