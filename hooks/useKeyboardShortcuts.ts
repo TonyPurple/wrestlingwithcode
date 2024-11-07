@@ -1,26 +1,23 @@
 import { useEffect } from "react";
+import { SearchBarHandle } from "../components/search-bar";
 
-export function useKeyboardShortcuts(handleClear: () => void) {
+export function useKeyboardShortcuts(
+  handleClear: () => void,
+  searchInputRef: React.RefObject<SearchBarHandle>
+) {
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        const searchInput = document.getElementById("search-posts");
-        searchInput?.focus();
+        searchInputRef.current?.focus();
       }
       if (e.key === "Escape") {
         handleClear();
-        const searchInput = document.getElementById(
-          "search-posts"
-        ) as HTMLInputElement;
-        if (searchInput) {
-          searchInput.value = "";
-          searchInput.blur();
-        }
+        searchInputRef.current?.blur();
       }
     };
 
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [handleClear]);
+  }, [handleClear, searchInputRef]);
 }

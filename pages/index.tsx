@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Head from "next/head";
 import Container from "../components/container";
 import MoreStories from "../components/more-stories";
 import HeroPost from "../components/hero-post";
 import Intro from "../components/intro";
 import Layout from "../components/layout";
-import SearchBar from "../components/search-bar";
+import SearchBar, { SearchBarHandle } from "../components/search-bar";
 import SectionSeparator from "../components/section-separator";
 import Post from "../interfaces/post";
 import { usePostLoader } from "../hooks/usePostLoader";
@@ -14,7 +14,7 @@ import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 export default function Index() {
   const { posts, loadPosts, hasMorePosts, isLoadingMoreRef } = usePostLoader();
-  const [searchResults, setSearchResults] = useState(posts);
+  const [searchResults, setSearchResults] = useState<Post[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -23,19 +23,22 @@ export default function Index() {
     !isSearching && hasMorePosts
   );
 
-  const handleSearch = (filtered: Post[], term: string) => {
+  const handleSearch = useCallback((filtered: Post[], term: string) => {
     setSearchResults(filtered);
     setSearchTerm(term);
     setIsSearching(term.trim() !== "");
-  };
+  }, []);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
+    searchInputRef.current?.clear();
     setSearchTerm("");
-    setSearchResults(posts);
+    setSearchResults([]);
     setIsSearching(false);
-  };
+  }, []);
 
-  useKeyboardShortcuts(handleClear);
+  const searchInputRef = useRef<SearchBarHandle>(null);
+
+  useKeyboardShortcuts(handleClear, searchInputRef);
 
   const displayPosts = isSearching ? searchResults : posts;
 
@@ -48,9 +51,9 @@ export default function Index() {
         <div className="relative w-full max-w-xl mx-auto mb-8 mt-4">
           <SearchBar
             id="search-posts"
-            value={searchTerm}
             onChange={handleSearch}
             onClear={handleClear}
+            ref={searchInputRef}
           />
           <div className="hidden md:block text-sm text-gray-500 mt-2 text-center">
             Press <kbd className="px-2 py-1 bg-gray-100 rounded">Ctrl K</kbd> to
