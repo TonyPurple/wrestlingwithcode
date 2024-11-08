@@ -1,15 +1,15 @@
 import { useRouter } from "next/router";
-import ErrorPage from "next/error";
 import Head from "next/head";
 import Container from "../../components/container";
 import PostBody from "../../components/post-body";
 import Header from "../../components/header";
 import PostHeader from "../../components/post-header";
 import Layout from "../../components/layout";
-import PostTitle from "../../components/post-title";
 import MoreStories from "../../components/more-stories";
 import SectionSeparator from "../../components/section-separator";
 import PostNavigation from "../../components/post-navigation";
+import LoadingState from "../../components/loading-state";
+import ErrorState from "../../components/error-state";
 import { getPostBySlug, getAllPosts } from "../../lib/api";
 import { markdownToHtml } from "../../lib/markdownToHtml";
 import { getPostShareUrl } from "../../lib/urlUtils";
@@ -26,7 +26,7 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
   const router = useRouter();
 
   if (!router.isFallback && !post?.slug) {
-    return <ErrorPage statusCode={404} />;
+    return <ErrorState />;
   }
 
   const adjacentPosts = [previousPost, nextPost].filter(Boolean) as PostType[];
@@ -36,13 +36,7 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
       <Container>
         <Header />
         {router.isFallback ? (
-          <div className="flex items-center justify-center py-20">
-            <PostTitle>
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-pulse">
-                Loading...
-              </span>
-            </PostTitle>
-          </div>
+          <LoadingState />
         ) : (
           <>
             <article className="mb-16">
@@ -151,4 +145,3 @@ export async function getStaticPaths() {
     fallback: false,
   };
 }
-
