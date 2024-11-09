@@ -1,42 +1,31 @@
-import { useState, useRef, useCallback } from "react";
 import Head from "next/head";
 import Container from "../components/container";
-import MoreStories from "../components/more-stories";
-import HeroPost from "../components/hero-post";
 import Intro from "../components/intro";
 import Layout from "../components/layout";
-import SearchBar, { SearchBarHandle } from "../components/search-bar";
+import PostList from "../components/post-list";
+import SearchBar from "../components/search-bar";
+import SearchInfo from "../components/search-info";
 import SectionSeparator from "../components/section-separator";
-import Post from "../interfaces/post";
 import { usePostLoader } from "../hooks/usePostLoader";
 import { useInfiniteScrollObserver } from "../hooks/useInfiniteScrollObserver";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useSearch } from "../hooks/useSearch";
 
 export default function Index() {
   const { posts, loadPosts, hasMorePosts, isLoadingMoreRef } = usePostLoader();
-  const [searchResults, setSearchResults] = useState<Post[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const {
+    searchResults,
+    isSearching,
+    searchTerm,
+    handleSearch,
+    handleClear,
+    searchInputRef,
+  } = useSearch();
 
   const sentinelRef = useInfiniteScrollObserver(
     loadPosts,
     !isSearching && hasMorePosts
   );
-
-  const handleSearch = useCallback((filtered: Post[], term: string) => {
-    setSearchResults(filtered);
-    setSearchTerm(term);
-    setIsSearching(term.trim() !== "");
-  }, []);
-
-  const handleClear = useCallback(() => {
-    searchInputRef.current?.clear();
-    setSearchTerm("");
-    setSearchResults([]);
-    setIsSearching(false);
-  }, []);
-
-  const searchInputRef = useRef<SearchBarHandle>(null);
 
   useKeyboardShortcuts(handleClear, searchInputRef);
 
@@ -63,51 +52,21 @@ export default function Index() {
         </div>
 
         <SectionSeparator className="my-8 border-gray-300" />
-
         <Intro />
 
-        {isSearching && searchTerm && searchResults.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No posts found for "{searchTerm}"
-          </div>
-        )}
+        <PostList
+          posts={displayPosts}
+          isSearching={isSearching}
+          searchTerm={searchTerm}
+        />
 
-        {!isSearching && displayPosts.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No posts available.
-          </div>
-        )}
-
-        {displayPosts.length > 0 && (
-          <>
-            <HeroPost
-              title={displayPosts[0].title}
-              coverImage={displayPosts[0].coverImage}
-              date={displayPosts[0].date}
-              author={displayPosts[0].author}
-              slug={displayPosts[0].slug}
-              excerpt={displayPosts[0].excerpt}
-            />
-            {displayPosts.length > 1 && (
-              <>
-                <SectionSeparator className="my-8 border-gray-300" />
-                <MoreStories posts={displayPosts.slice(1)} />
-              </>
-            )}
-          </>
-        )}
-
-        {isLoadingMoreRef.current && !isSearching && (
-          <div className="text-center py-8 text-gray-500">Loading...</div>
-        )}
+        <SearchInfo
+          isLoading={isLoadingMoreRef.current}
+          hasMorePosts={hasMorePosts}
+          isSearching={isSearching}
+        />
 
         {!isSearching && <div ref={sentinelRef} />}
-
-        {!hasMorePosts && !isSearching && (
-          <div className="text-center py-8 text-gray-500">
-            You have reached the end of the list.
-          </div>
-        )}
       </Container>
     </Layout>
   );
