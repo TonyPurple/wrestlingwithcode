@@ -1,4 +1,3 @@
-
 import PostTitle from "./post-title";
 
 const LoadingState: React.FC = () => {
