@@ -1,6 +1,7 @@
 import fs from "fs";
 import { join } from "path";
 import matter from "gray-matter";
+import PostType from "../interfaces/post";
 
 const postsDirectory = join(process.cwd(), "_posts");
 
@@ -8,19 +9,17 @@ export function getPostSlugs() {
   return fs.readdirSync(postsDirectory);
 }
 
-export function getPostBySlug(slug: string, fields: string[] = []) {
+export function getPostBySlug(
+  slug: string,
+  fields: string[] = []
+): Partial<PostType> {
   const realSlug = slug.replace(/\.md$/, "");
   const fullPath = join(postsDirectory, `${realSlug}.md`);
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
 
-  type Items = {
-    [key: string]: string | number | boolean | object | undefined;
-  };
+  const items: Partial<PostType> = {};
 
-  const items: Items = {};
-
-  // Ensure only the minimal needed data is exposed
   fields.forEach((field) => {
     if (field === "slug") {
       items[field] = realSlug;
@@ -37,7 +36,7 @@ export function getPostBySlug(slug: string, fields: string[] = []) {
   return items;
 }
 
-export function getAllPosts(fields: string[] = []) {
+export function getAllPosts(fields: string[] = []): Partial<PostType>[] {
   const slugs = getPostSlugs();
   const posts = slugs
     .map((slug) => {
@@ -48,9 +47,11 @@ export function getAllPosts(fields: string[] = []) {
         return null;
       }
     })
-    .filter((post) => post !== null && post !== undefined)
-    // sort posts by date in descending order
+    .filter(
+      (post): post is Partial<PostType> => post !== null && post !== undefined
+    )
     .sort((post1, post2) => {
+      if (!post1.date || !post2.date) return 0;
       const date1 = new Date(post1.date as string);
       const date2 = new Date(post2.date as string);
       return date2.getTime() - date1.getTime();
