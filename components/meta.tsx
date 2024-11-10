@@ -73,22 +73,6 @@ const Meta = ({
         title={`RSS Feed for ${title}`}
         href="/feed.xml"
       />
-
-      {/* Font Preloading - optional but recommended */}
-      <link
-        rel="preload"
-        href="/fonts/barlow-condensed.woff2"
-        as="font"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
-      <link
-        rel="preload"
-        href="/fonts/playfair-display.woff2"
-        as="font"
-        type="font/woff2"
-        crossOrigin="anonymous"
-      />
     </Head>
   );
 };

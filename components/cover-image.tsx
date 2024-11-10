@@ -13,7 +13,7 @@ const CoverImage = ({
   title,
   src,
   slug,
-  priority = false,
+  priority = true,
 }: CoverImageProps) => {
   const image = (
     <div className="relative">

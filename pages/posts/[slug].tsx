@@ -1,5 +1,3 @@
-import { useRouter } from "next/router";
-import Head from "next/head";
 import Container from "../../components/container";
 import PostBody from "../../components/post-body";
 import Header from "../../components/header";
@@ -10,10 +8,13 @@ import SectionSeparator from "../../components/section-separator";
 import PostNavigation from "../../components/post-navigation";
 import LoadingState from "../../components/loading-state";
 import ErrorState from "../../components/error-state";
+import PostMeta from "../../components/post-meta";
+import { usePost } from "../../hooks/usePost";
+import PostType from "../../interfaces/post";
+import { getAdjacentPosts } from "../../lib/postUtils";
 import { getPostBySlug, getAllPosts } from "../../lib/api";
 import { markdownToHtml } from "../../lib/markdownToHtml";
 import { getPostShareUrl } from "../../lib/urlUtils";
-import type PostType from "../../interfaces/post";
 
 type Props = {
   post: PostType;
@@ -23,9 +24,9 @@ type Props = {
 };
 
 export default function Post({ post, previousPost, nextPost, preview }: Props) {
-  const router = useRouter();
+  const { isLoading, isError } = usePost(post, preview);
 
-  if (!router.isFallback && !post?.slug) {
+  if (isError) {
     return <ErrorState />;
   }
 
@@ -35,20 +36,12 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
     <Layout preview={preview}>
       <Container>
         <Header />
-        {router.isFallback ? (
+        {isLoading ? (
           <LoadingState />
         ) : (
           <>
             <article className="mb-16">
-              <Head>
-                <title>{`${post.title} | Wrestling with Code`}</title>
-                <meta property="og:image" content={post.ogImage.url} />
-                <meta
-                  property="og:title"
-                  content={`${post.title} | Wrestling with Code`}
-                />
-                <meta property="og:description" content={post.excerpt} />
-              </Head>
+              <PostMeta post={post} />
 
               <div className="space-y-12 md:space-y-16">
                 <PostHeader
@@ -81,13 +74,7 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
   );
 }
 
-type Params = {
-  params: {
-    slug: string;
-  };
-};
-
-export async function getStaticProps({ params }: Params) {
+export async function getStaticProps({ params }: { params: { slug: string } }) {
   const post = getPostBySlug(params.slug, [
     "title",
     "date",
@@ -98,6 +85,7 @@ export async function getStaticProps({ params }: Params) {
     "coverImage",
     "excerpt",
   ]);
+
   const content = await markdownToHtml(
     typeof post.content === "string" ? post.content : ""
   );
@@ -109,15 +97,9 @@ export async function getStaticProps({ params }: Params) {
     "author",
     "coverImage",
     "excerpt",
-  ]).sort((post1, post2) => (post1.date > post2.date ? -1 : 1)); // Newest first
+  ]).sort((post1, post2) => (post1.date > post2.date ? -1 : 1));
 
-  const currentPostIndex = allPosts.findIndex((p) => p.slug === params.slug);
-
-  const previousPost =
-    currentPostIndex < allPosts.length - 1
-      ? allPosts[currentPostIndex + 1]
-      : null;
-  const nextPost = currentPostIndex > 0 ? allPosts[currentPostIndex - 1] : null;
+  const { previousPost, nextPost } = getAdjacentPosts(allPosts, params.slug);
 
   return {
     props: {
@@ -135,13 +117,11 @@ export async function getStaticPaths() {
   const posts = getAllPosts(["slug"]);
 
   return {
-    paths: posts.map((post) => {
-      return {
-        params: {
-          slug: post.slug,
-        },
-      };
-    }),
+    paths: posts.map((post) => ({
+      params: {
+        slug: post.slug,
+      },
+    })),
     fallback: false,
   };
 }
