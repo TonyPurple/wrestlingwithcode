@@ -8,11 +8,11 @@ import React, {
 import { Search, X } from "lucide-react";
 import debounce from "lodash/debounce";
 import axios from "axios";
-import Post from "../interfaces/post";
+import { PostType } from "../interfaces/post";
 
 interface SearchBarProps {
   id?: string;
-  onChange: (filteredPosts: Post[], searchTerm: string) => void;
+  onChange: (filteredPosts: PostType[], searchTerm: string) => void;
   onClear: () => void;
 }
 

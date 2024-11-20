@@ -1,6 +1,6 @@
 import type Author from "./author";
 
-type PostType = {
+export type PostType = {
   slug: string;
   title: string;
   date: string;
@@ -11,7 +11,22 @@ type PostType = {
     url: string;
   };
   content: string;
-  plainTextContent?: string;
+  plainTextContent?: string | null;
 };
 
-export default PostType;
+export type PostPreview = {
+  slug: string;
+  title: string;
+  date: string;
+  coverImage: string;
+  author: Author;
+  excerpt: string;
+  ogImage?: {
+    url: string;
+  };
+};
+
+export type FullPost = PostPreview & {
+  content: string;
+  plainTextContent?: string | null;
+};

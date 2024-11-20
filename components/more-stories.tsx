@@ -1,8 +1,8 @@
 import PostPreview from "./post-preview";
-import type Post from "../interfaces/post";
+import type { PostPreview as PostPreviewType } from '../interfaces/post';
 
 interface Props {
-  posts: Post[];
+  posts: PostPreviewType[];
   title?: string;
   className?: string;
 }

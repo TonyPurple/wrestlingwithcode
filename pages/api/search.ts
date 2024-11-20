@@ -4,15 +4,7 @@ import { markdownToPlainText } from "../../lib/markdownToHtml";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { q } = req.query;
-  const rawPosts = getAllPosts([
-    "title",
-    "date",
-    "slug",
-    "author",
-    "coverImage",
-    "excerpt",
-    "content",
-  ]);
+  const rawPosts = getAllPosts();
 
   const allPosts = await Promise.all(
     rawPosts.map(async (post: any) => {

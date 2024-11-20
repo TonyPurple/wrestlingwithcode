@@ -1,15 +1,20 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
-import type Post from "../interfaces/post";
+import { PostPreview } from "../interfaces/post";
 
 export function usePostLoader() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostPreview[]>([]);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const isLoadingMoreRef = useRef(false);
+  const hasMorePostsRef = useRef(hasMorePosts);
   const currentPageRef = useRef(1);
 
+  useEffect(() => {
+    hasMorePostsRef.current = hasMorePosts;
+  }, [hasMorePosts]);
+
   const loadPosts = useCallback(async () => {
-    if (isLoadingMoreRef.current || !hasMorePosts) return;
+    if (isLoadingMoreRef.current || !hasMorePostsRef.current) return;
 
     isLoadingMoreRef.current = true;
 
@@ -18,12 +23,10 @@ export function usePostLoader() {
         params: { page: currentPageRef.current },
       });
 
-      const newPosts = response.data.posts;
-
       setPosts((prevPosts) => {
-        const postsSet = new Set(prevPosts.map((post) => post.slug));
-        const uniqueNewPosts = newPosts.filter(
-          (post) => !postsSet.has(post.slug)
+        const existingSlugs = new Set(prevPosts.map((post) => post.slug));
+        const uniqueNewPosts = response.data.posts.filter(
+          (newPost) => !existingSlugs.has(newPost.slug)
         );
         return [...prevPosts, ...uniqueNewPosts];
       });
@@ -35,7 +38,7 @@ export function usePostLoader() {
     } finally {
       isLoadingMoreRef.current = false;
     }
-  }, [hasMorePosts]);
+  }, []);
 
   return { posts, loadPosts, hasMorePosts, isLoadingMoreRef };
 }

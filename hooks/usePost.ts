@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
-import Post from "../interfaces/post";
+import { PostType } from "../interfaces/post";
 
-export function usePost(post: Post | null, preview?: boolean) {
+export function usePost(post: PostType | null, preview?: boolean) {
   const router = useRouter();
 
   const isLoading = router.isFallback;

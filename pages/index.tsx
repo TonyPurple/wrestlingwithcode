@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { useEffect } from "react";
 import Container from "../components/container";
 import Intro from "../components/intro";
 import Layout from "../components/layout";
@@ -28,6 +29,10 @@ export default function Index() {
   );
 
   useKeyboardShortcuts(handleClear, searchInputRef);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   const displayPosts = isSearching ? searchResults : posts;
 

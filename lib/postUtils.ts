@@ -1,4 +1,4 @@
-import PostType from "../interfaces/post";
+import { PostType } from "../interfaces/post";
 
 interface AdjacentPosts {
   previousPost: Partial<PostType> | null;
