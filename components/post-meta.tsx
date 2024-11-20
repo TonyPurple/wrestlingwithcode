@@ -1,8 +1,8 @@
 import Head from "next/head";
-import Post from "../interfaces/post";
+import { PostType } from "../interfaces/post";
 
 type PostMetaProps = {
-  post: Post;
+  post: PostType;
 };
 
 const PostMeta = ({ post }: PostMetaProps) => {

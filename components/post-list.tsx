@@ -1,10 +1,10 @@
-import Post from "../interfaces/post";
+import type { PostPreview } from '../interfaces/post';
 import HeroPost from "./hero-post";
 import MoreStories from "./more-stories";
 import SectionSeparator from "./section-separator";
 
 interface PostListProps {
-  posts: Post[];
+  posts: PostPreview[];
   isSearching: boolean;
   searchTerm?: string;
 }

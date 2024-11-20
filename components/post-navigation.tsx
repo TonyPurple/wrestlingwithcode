@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SectionSeparator from "./section-separator";
-import type PostType from "../interfaces/post";
+import type { PostType } from "../interfaces/post";
 
 interface PostNavigationProps {
   previousPost?: PostType | null;

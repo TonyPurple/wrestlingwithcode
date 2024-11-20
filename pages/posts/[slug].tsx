@@ -10,7 +10,7 @@ import LoadingState from "../../components/loading-state";
 import ErrorState from "../../components/error-state";
 import PostMeta from "../../components/post-meta";
 import { usePost } from "../../hooks/usePost";
-import PostType from "../../interfaces/post";
+import { PostType } from "../../interfaces/post";
 import { getAdjacentPosts } from "../../lib/postUtils";
 import { getPostBySlug, getAllPosts } from "../../lib/api";
 import { markdownToHtml } from "../../lib/markdownToHtml";
@@ -75,29 +75,13 @@ export default function Post({ post, previousPost, nextPost, preview }: Props) {
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const post = getPostBySlug(params.slug, [
-    "title",
-    "date",
-    "slug",
-    "author",
-    "content",
-    "ogImage",
-    "coverImage",
-    "excerpt",
-  ]);
+  const post = getPostBySlug(params.slug);
 
   const content = await markdownToHtml(
     typeof post.content === "string" ? post.content : ""
   );
 
-  const allPosts = getAllPosts([
-    "title",
-    "date",
-    "slug",
-    "author",
-    "coverImage",
-    "excerpt",
-  ]).sort((post1, post2) => (post1.date > post2.date ? -1 : 1));
+  const allPosts = getAllPosts().sort((post1, post2) => (post1.date > post2.date ? -1 : 1));
 
   const { previousPost, nextPost } = getAdjacentPosts(allPosts, params.slug);
 
@@ -114,7 +98,7 @@ export async function getStaticProps({ params }: { params: { slug: string } }) {
 }
 
 export async function getStaticPaths() {
-  const posts = getAllPosts(["slug"]);
+  const posts = getAllPosts();
 
   return {
     paths: posts.map((post) => ({
