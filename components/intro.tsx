@@ -132,6 +132,19 @@ const Intro = () => {
                 {icon}
               </a>
             ))}
+            <a
+              href="https://www.credly.com/badges/770227f5-3f86-40e0-b07b-a0cfac8769cf/public_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300"
+              aria-label="Credly Badge"
+            >
+              <img
+                src="/images/credly-badge.png"
+                alt="Certification Badge"
+                className="h-6 w-6"
+              />
+            </a>
           </motion.div>
         </div>
 
