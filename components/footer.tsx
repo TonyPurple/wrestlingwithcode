@@ -49,7 +49,7 @@ const Footer = () => {
               <a
                 key={href}
                 href={href}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-2 md:py-3 px-4 md:px-8 rounded-lg hover:opacity-90 transition-opacity duration-200 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-2 md:py-3 px-6 md:px-8 rounded-lg hover:opacity-90 transition-opacity duration-200 flex items-center gap-2"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
