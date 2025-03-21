@@ -37,22 +37,25 @@ const Footer = () => {
               </h3>
             </Link>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              © {currentYear} {SITE_NAME}. All rights reserved.
+              &copy; {currentYear} {SITE_NAME}. All rights reserved.
             </p>
           </div>
 
-          <nav className="flex items-center gap-4" aria-label="Social links">
+          <nav
+            className="flex flex-wrap items-center gap-4"
+            aria-label="Social links"
+          >
             {SOCIAL_LINKS.map(({ href, label, icon }) => (
               <a
                 key={href}
                 href={href}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-3 px-8 rounded-lg hover:opacity-90 transition-opacity duration-200 flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-2 md:py-3 px-4 md:px-8 rounded-lg hover:opacity-90 transition-opacity duration-200 flex items-center gap-2"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
               >
                 {icon}
-                <span>{label}</span>
+                <span className="text-sm md:text-base">{label}</span>
               </a>
             ))}
             <a
@@ -65,7 +68,7 @@ const Footer = () => {
               <img
                 src="/images/CCT-Badge.png"
                 alt="Scholarship Badge"
-                className="h-48 w-48"
+                className="h-24 md:h-48 w-24 md:w-48 mx-auto"
               />
             </a>
           </nav>
