@@ -55,6 +55,19 @@ const Footer = () => {
                 <span>{label}</span>
               </a>
             ))}
+            <a
+              href="https://campaigns.eccouncil.org/cyber-career-starter-scholarship"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300"
+              aria-label="EC-Council Badge"
+            >
+              <img
+                src="/images/CCT-Badge.png"
+                alt="Scholarship Badge"
+                className="h-48 w-48"
+              />
+            </a>
           </nav>
         </div>
       </Container>
