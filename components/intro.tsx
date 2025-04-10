@@ -133,7 +133,7 @@ const Intro = () => {
               </a>
             ))}
             <a
-              href="https://www.credly.com/badges/770227f5-3f86-40e0-b07b-a0cfac8769cf/public_url"
+              href="https://www.credly.com/badges/012220fc-7cab-445b-82a3-ae3cc5addb15/public_url"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-600 hover:text-blue-600 transition-colors duration-200 dark:text-gray-400 dark:hover:text-blue-300"
